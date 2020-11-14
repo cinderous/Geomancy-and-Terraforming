@@ -82,13 +82,13 @@ public class SpellDev3 extends Item {
                 //that would be half of spellpower(5) and rounded to the floor
                 //spellpower must be odd to allow the center to exist at different spellpowers
 
-                spellpower = 5;
+                spellpower = 15;
                 sinkholesizetoside = (int) Math.floor(spellpower * 0.5);
 
 //                int g;
 //                for(g = 0; g <= spellpower; ++g) {
 
-                    //find the northwest corner
+                    //find the northwest corner and cut out a length by spell power on x and repeat those steps through z
                     currentblockpos = new BlockPos(targetblockpos.north(sinkholesizetoside).west(sinkholesizetoside).getX(), targetblockpos.north(sinkholesizetoside).west(sinkholesizetoside).getY(), targetblockpos.north(sinkholesizetoside).west(sinkholesizetoside).getZ());
                     int s;
                     for (s = 0; s <= spellpower-1; ++s) {
@@ -106,20 +106,24 @@ public class SpellDev3 extends Item {
                     }
 
                     //phase2really
-                    //
+                    //the target block layer is now sunk
                     ++sinkholedepth;
-                    int innersizeworking = sinkholesizetoside - 1 ;
+
+
+                    int innersizeworking = sinkholesizetoside - sinkholedepth ;
                     currentblockpos = new BlockPos(targetblockpos.north(innersizeworking).west(innersizeworking).getX(), targetblockpos.north(innersizeworking).west(innersizeworking).getY(), targetblockpos.north(innersizeworking).west(innersizeworking).getZ());
 
-                    int y;
 
+                    //we need to prepare the next level to be moved
+                ++sinkholedepth;
 
-                    for (s = 0; s <= spellpower-3; ++s) {
+                    for (s = 0; s <= spellpower-sinkholedepth-1; ++s) {
                         int x;
                         int sinkholepowerposX = currentblockpos.south(s).getX();
                         int sinkholepowerposZ = currentblockpos.south(s).getZ();
                         int sinkholedepthcurrent = currentblockpos.down().getY();
-                        for (x = currentblockpos.south(s).getX(); x <= sinkholepowerposX + spellpower - 3; ++x) {
+                        //we need to follow along x removing the land but stopping 1 short from the side but still effected by spell power
+                        for (x = currentblockpos.south(s).getX(); x <= sinkholepowerposX + spellpower - sinkholedepth- 1; ++x) {
                             GeomancyAndTerraforming.LOGGER.info(x);
                             BlockPos workingblockpos = new BlockPos(x, sinkholedepthcurrent, sinkholepowerposZ);
                             BlockState workingblock = worldIn.getBlockState(workingblockpos);
