@@ -27,6 +27,8 @@ public class SpellDev3 extends Item {
     public static int sinkholesizetoside;
     public static int sinkholedepth;
 
+    public int tick = 0;
+
     public SpellDev3(Properties properties) {
         super(properties);
     }
@@ -91,6 +93,7 @@ public class SpellDev3 extends Item {
                     //find the northwest corner and cut out a length by spell power on x and repeat those steps through z
                     currentblockpos = new BlockPos(targetblockpos.north(sinkholesizetoside).west(sinkholesizetoside).getX(), targetblockpos.north(sinkholesizetoside).west(sinkholesizetoside).getY(), targetblockpos.north(sinkholesizetoside).west(sinkholesizetoside).getZ());
                     int s;
+
                     for (s = 0; s <= spellpower-1; ++s) {
                         int x;
                         int sinkholepowerposX = currentblockpos.south(s).getX();
@@ -108,30 +111,49 @@ public class SpellDev3 extends Item {
                     //phase2really
                     //the target block layer is now sunk
                     ++sinkholedepth;
+                    int h;
+                    for(h = 0; h <= (spellpower - sinkholedepth); ++h) {
+
+                        int innersizeworking = sinkholesizetoside - sinkholedepth ;
+                        currentblockpos = new BlockPos(targetblockpos.north(innersizeworking).west(innersizeworking).getX(), targetblockpos.north(innersizeworking).west(innersizeworking).getY(), targetblockpos.north(innersizeworking).west(innersizeworking).getZ());
 
 
-                    int innersizeworking = sinkholesizetoside - sinkholedepth ;
-                    currentblockpos = new BlockPos(targetblockpos.north(innersizeworking).west(innersizeworking).getX(), targetblockpos.north(innersizeworking).west(innersizeworking).getY(), targetblockpos.north(innersizeworking).west(innersizeworking).getZ());
+                        //we need to prepare the next level to be moved
+                        ++sinkholedepth;
+
+                        for (s = 0; s <= spellpower-sinkholedepth-1; ++s) {
+                            int x;
+                            int sinkholepowerposX = currentblockpos.south(s).getX();
+                            int sinkholepowerposZ = currentblockpos.south(s).getZ();
+                            int sinkholedepthcurrent = currentblockpos.down(h).getY();
+                            //we need to follow along x removing the land but stopping short from the sides but still effected by spell power
+                            for (x = sinkholepowerposX; x <= sinkholepowerposX + spellpower - sinkholedepth - 1; ++x) {
 
 
-                    //we need to prepare the next level to be moved
-                ++sinkholedepth;
+                                BlockPos workingblockpos = new BlockPos(x, sinkholedepthcurrent, sinkholepowerposZ);
+                                BlockState workingblock = worldIn.getBlockState(workingblockpos);
 
-                    for (s = 0; s <= spellpower-sinkholedepth-1; ++s) {
-                        int x;
-                        int sinkholepowerposX = currentblockpos.south(s).getX();
-                        int sinkholepowerposZ = currentblockpos.south(s).getZ();
-                        int sinkholedepthcurrent = currentblockpos.down().getY();
-                        //we need to follow along x removing the land but stopping 1 short from the side but still effected by spell power
-                        for (x = currentblockpos.south(s).getX(); x <= sinkholepowerposX + spellpower - sinkholedepth- 1; ++x) {
-                            GeomancyAndTerraforming.LOGGER.info(x);
-                            BlockPos workingblockpos = new BlockPos(x, sinkholedepthcurrent, sinkholepowerposZ);
-                            BlockState workingblock = worldIn.getBlockState(workingblockpos);
-                            worldIn.setBlockState(workingblockpos.down(), workingblock);
-                            worldIn.setBlockState(workingblockpos, Blocks.AIR.getDefaultState());
-//testtesttest
+                                GeomancyAndTerraforming.LOGGER.info(workingblockpos);
+
+                                worldIn.setBlockState(workingblockpos.down(), workingblock);
+                                worldIn.setBlockState(workingblockpos, Blocks.AIR.getDefaultState());
+
+                                GeomancyAndTerraforming.LOGGER.info("COMPLETED A ROW TOWARDS X OF REMOVAL");
+
+
+                            }
                         }
-                }
+                    }
+
+                    }
+            GeomancyAndTerraforming.LOGGER.info(sinkholedepth);
+            sinkholedepth = 0;
+
+
+
+
+
+
 
 //                }
 
@@ -214,13 +236,13 @@ public class SpellDev3 extends Item {
 //                worldIn.setBlockState(targetblockpos, Blocks.AIR.getDefaultState());
 
 
-            }
+            }return super.onItemRightClick(worldIn, playerIn, handIn);
 
 
 
 
-    }return super.onItemRightClick(worldIn, playerIn, handIn);
-}}
+    }
+}
 
 
 
