@@ -25,7 +25,7 @@ import net.minecraftforge.common.property.Properties;
 
 import java.util.Random;
 
-public class SpellDev4 extends Item {
+public class SpellDev5 extends Item {
     private TickHandler handler;
 
     public Random rand = new Random();
@@ -50,34 +50,27 @@ public class SpellDev4 extends Item {
     public static int sinkholedepth;
 
     public static boolean isCasting = false;
-    public static boolean hasCasted = true;
     public static World currentWorldMain;
-    public static Entity currentPlayerMain;
-    public static BlockPos targetBlockPosMain;
-
-
-
-    public static int timesThirdRan = 0;
-    public static boolean targetisnull = false;
+    public static int spellCastedAmount = 0;
 
     public int tick = 0;
 
-    public SpellDev4(Properties properties) {
+    public SpellDev5(Properties properties) {
         super(properties);
         handler = new TickHandler();
         handler.addMethod("initialize", (timesRun) -> initialize());
-        handler.addMethod("firstLoop", (timesRun) -> doFirstLoop());
-        //
-        handler.addMethod("secondLoop", (timesRun) -> doSecondLoop());
-        handler.addRepeatedDelayedMethod("thirdLoop", spellpower, 10, (timesRun) -> doThirdLoop(timesThirdRan));
-//            handler.addRepeatedDelayedMethod("thirdLoop", firstLength, 5, (timesRun) -> thisIsAwesome(horizontalDirection[firstWidthDirection]));
+        //handler.addMethod("firstLoop", (timesRun) -> doFirstLoop(spellCastedAmount));
+        // handler.addRepeatedDelayedMethod("firstLoop", 1, 5, (timesRun) -> doFirstLoop());
+        handler.addRepeatedMethod("firstLoop", spellpower, (timesRun) -> doFirstLoop(spellCastedAmount));
+        handler.addRepeatedMethod("secondLoop", 1, (timesRun) -> doSecondLoop());
+
 //            handler.addMethod("doLeaves", (timesRun) -> doLeaves());
 //            handler.addMethod("finalizeTree", (timesRun) -> finalizeTree());
+
+        handler.addMethod("thirdLoop", (timesRun) -> doThirdLoop());
 //            handler.addRepeatedDelayedMethod("doMoreTree", rand.nextInt(9) + 5, 5, (timesRun) -> doMoreTree(verticalDirection[0]));
 //            handler.addRepeatedDelayedMethod("doMoreBranches", secondLength, 5, (timesRun) -> doMoreBranches(horizontalDirection[secondWidthDirection]));
     }
-
-
 
 
     @Override
@@ -85,12 +78,7 @@ public class SpellDev4 extends Item {
         if (!worldIn.isRemote) {
 
             currentWorldMain = worldIn;
-            currentPlayerMain = entityIn;
-
-
-
             handler.tick();
-
 
 
 
@@ -128,55 +116,93 @@ public class SpellDev4 extends Item {
 //            }
 
 
+            final RayTraceResult hit = rayTrace(playerIn.getEntityWorld(), playerIn, RayTraceContext.FluidMode.NONE);
 
-            if(isCasting && timesThirdRan == spellpower) {
-                timesThirdRan = 0  ;
-                isCasting = false;
+            if (hit instanceof BlockRayTraceResult) {
+
+                targetblockpos = ((BlockRayTraceResult) hit).getPos();
+                targetblock = worldIn.getBlockState(targetblockpos);
+
+
             }
+
             isCasting = true;
 
 
-
-        }return super.onItemRightClick(worldIn, playerIn, handIn);
+        }
+        return super.onItemRightClick(worldIn, playerIn, handIn);
     }
 
 
-    public String initialize () {
-
+    public String initialize() {
         //handler.addVariable("currentPos", this.getPos());
         handler.addVariable("currentWorld", currentWorldMain);
-        handler.addVariable("currentPlayer", currentPlayerMain);
-        handler.addVariable("currentPos", new BlockPos (0,0,0));
-        //currentWorldMain = (World) handler.getVariable("currentWorld").get();
-        //currentPlayerMain = (Entity) handler.getVariable("currentPlayer").get();
-        targetBlockPosMain = (BlockPos) handler.getVariable("currentPos").get();
-
-
-
+        currentWorldMain = (World) handler.getVariable("currentWorld").get();
         World currentWorld = (World) handler.getVariable("currentWorld").get();
 
-            if(targetblockpos == null && !currentPlayerMain.isSneaking()) {
-                targetblockpos = targetBlockPosMain;
-                targetisnull = true;
-            }
 
-            if(isCasting || !targetisnull) {
+//            //phase2really
+//            //the target block layer is now sunk
+//            ++sinkholedepth;
+//            int h;
+//            for (h = 0; h <= (spellpower - sinkholedepth); ++h) {
+//
+//                int innersizeworking = sinkholesizetoside - sinkholedepth;
+//                currentblockpos = new BlockPos(targetblockpos.north(innersizeworking).west(innersizeworking).getX(), targetblockpos.north(innersizeworking).west(innersizeworking).getY(), targetblockpos.north(innersizeworking).west(innersizeworking).getZ());
+//
+//
+//                //we need to prepare the next level to be moved
+//                ++sinkholedepth;
+//
+//                for (s = 0; s <= spellpower - sinkholedepth - 1; ++s) {
+//                    int x;
+//                    int sinkholepowerposX = currentblockpos.south(s).getX();
+//                    int sinkholepowerposZ = currentblockpos.south(s).getZ();
+//                    int sinkholedepthcurrent = currentblockpos.down(h).getY();
+//                    //we need to follow along x removing the land but stopping short from the sides but still effected by spell power
+//                    for (x = sinkholepowerposX; x <= sinkholepowerposX + spellpower - sinkholedepth - 1; ++x) {
+//
+//
+//                        BlockPos workingblockpos = new BlockPos(x, sinkholedepthcurrent, sinkholepowerposZ);
+//                        BlockState workingblock = currentWorld.getBlockState(workingblockpos);
+//
+//                        GeomancyAndTerraforming.LOGGER.info(workingblockpos);
+//
+//                        currentWorld.setBlockState(workingblockpos.down(), workingblock);
+//                        currentWorld.setBlockState(workingblockpos, Blocks.AIR.getDefaultState());
+//
+//                        GeomancyAndTerraforming.LOGGER.info("COMPLETED A ROW TOWARDS X OF REMOVAL");
+//
+//
+//                    }
+//                }
+//            }
 
-                final RayTraceResult hit = rayTrace(currentPlayerMain.getEntityWorld(), (PlayerEntity) currentPlayerMain, RayTraceContext.FluidMode.NONE);
+        GeomancyAndTerraforming.LOGGER.info("End of initialize");
+        return "firstLoop";
 
-                if (hit instanceof BlockRayTraceResult) {
-
-                    targetblockpos = ((BlockRayTraceResult) hit).getPos();
-                    targetblock = currentWorldMain.getBlockState(targetblockpos);
-
-                    //targetBlockPosMain = (BlockPos) handler.getVariable("targetBlockPos");
-
-                    targetisnull = false;
+    }
 
 
+    public String doFirstLoop(int currentCast) {
+        ++spellCastedAmount;
+        if(isCasting) {
 
-                }
-            if (!currentWorld.isRemote && isCasting  ) {
+            GeomancyAndTerraforming.LOGGER.info("End of first loop, set to secondLoop");
+            return "secondLoop";
+        }
+        GeomancyAndTerraforming.LOGGER.info("End of first loop, set to initialize");
+        return "initialize";
+
+
+    };
+
+
+        public String doSecondLoop () {
+
+            GeomancyAndTerraforming.LOGGER.info(targetblockpos);
+            World currentWorld = (World) handler.getVariable("currentWorld").get();
+            if (!currentWorld.isRemote & isCasting) {
 
                 //goal is to get a square based on spell power and sink the insides using math
                 //we need a x y z that can scale dynamically in constraints
@@ -185,7 +211,7 @@ public class SpellDev4 extends Item {
                 //that would be half of spellpower(5) and rounded to the floor
                 //spellpower must be odd to allow the center to exist at different spellpowers
 
-                //spellpower = 15;
+
                 sinkholesizetoside = (int) Math.floor(spellpower * 0.5);
 
 //                int g;
@@ -199,102 +225,38 @@ public class SpellDev4 extends Item {
                     int x;
                     int sinkholepowerposX = currentblockpos.south(s).getX();
                     int sinkholepowerposZ = currentblockpos.south(s).getZ();
+                    int sinkholepowerposY = currentblockpos.south(s).getY();
                     for (x = currentblockpos.south(s).getX(); x <= sinkholepowerposX + spellpower - 1; ++x) {
 
-                        BlockPos workingblockpos = new BlockPos(x, currentblockpos.getY(), sinkholepowerposZ);
+
+                        GeomancyAndTerraforming.LOGGER.info(x);
+
+                        BlockPos workingblockpos = new BlockPos(x, sinkholepowerposY, sinkholepowerposZ);
                         BlockState workingblock = currentWorld.getBlockState(workingblockpos);
+
+                        GeomancyAndTerraforming.LOGGER.info(workingblockpos);
+                        GeomancyAndTerraforming.LOGGER.info(workingblock);
+
                         currentWorld.setBlockState(workingblockpos.down(), workingblock);
                         currentWorld.setBlockState(workingblockpos, Blocks.AIR.getDefaultState());
 
                     }
                 }
+                ++spellCastedAmount;
 
 
 
             }
 
-            sinkholedepth = 0;
-
-
-        }
-
-        handler.addVariable("currentPos", targetblockpos);
-    GeomancyAndTerraforming.LOGGER.info(timesThirdRan);
-        return "firstLoop";
-
-    }
-
-
-    public String doFirstLoop() {
-        World currentWorld = (World) handler.getVariable("currentWorld").get();
-        Entity currentPlayer = (Entity) handler.getVariable("currentPlayer").get();
-        if (targetisnull) {
-            return "initialize";
-        }
-        if (!targetisnull && timesThirdRan < spellpower) {
+            GeomancyAndTerraforming.LOGGER.info("End of second loop, sending to third and initialize");
             return "thirdLoop";
         }
-        isCasting = false;
-        return "secondLoop";
+
+        private String doThirdLoop () {
+
+            spellCastedAmount = 0;
+            isCasting = false;
+
+        return "initialize";
     }
-
-    private String doSecondLoop() {
-        return "firstLoop";
     }
-
-    private String doThirdLoop(int timesThirdRan) {
-        if(timesThirdRan == spellpower){
-            isCasting=false;
-        }
-        World currentWorld = (World) handler.getVariable("currentWorld").get();
-        if (!currentWorld.isRemote && isCasting) {
-
-
-
-            BlockPos initialtarget = (BlockPos) handler.getVariable("currentPos").get();
-            GeomancyAndTerraforming.LOGGER.info(initialtarget);
-
-//            int h;
-//            for (h = 0; h <= (spellpower - timesThirdRan); ++h) {
-
-                int innersizeworking = sinkholesizetoside - timesThirdRan;
-                currentblockpos = new BlockPos(initialtarget.north(innersizeworking).west(innersizeworking).getX(), initialtarget.north(innersizeworking).west(innersizeworking).getY(), initialtarget.north(innersizeworking).west(innersizeworking).getZ());
-
-
-                int s;
-                for (s = 0; s <= spellpower - timesThirdRan; ++s) {
-                    int x;
-                    int sinkholepowerposX = currentblockpos.south(s).getX();
-                    int sinkholepowerposZ = currentblockpos.south(s).getZ();
-                    int sinkholedepthcurrent = currentblockpos.down(timesThirdRan).getY();
-                    //we need to follow along x removing the land but stopping short from the sides but still effected by spell power
-                    for (x = sinkholepowerposX; x <= sinkholepowerposX + spellpower - timesThirdRan - 1; ++x) {
-
-
-                        BlockPos workingblockpos = new BlockPos(x, sinkholedepthcurrent, sinkholepowerposZ);
-                        BlockState workingblock = currentWorld.getBlockState(workingblockpos);
-
-
-
-                        currentWorld.setBlockState(workingblockpos.down(), workingblock);
-                        currentWorld.setBlockState(workingblockpos, Blocks.AIR.getDefaultState());
-                        handler.addVariable("currentPos", initialtarget);
-                        ++timesThirdRan;
-
-
-
-
-
-
-
-
-                    }
-//                }
-
-            }
-        }
-
-
-        return "firstLoop";
-    }
-}

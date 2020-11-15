@@ -1,9 +1,6 @@
 package net.cinderous.geomancyandterraforming;
 
-import net.cinderous.geomancyandterraforming.item.SpellDev;
-import net.cinderous.geomancyandterraforming.item.SpellDev2;
-import net.cinderous.geomancyandterraforming.item.SpellDev3;
-import net.cinderous.geomancyandterraforming.item.SpellDev4;
+import net.cinderous.geomancyandterraforming.item.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.BlockItem;
@@ -47,6 +44,7 @@ public class RegistryHandler
     public static final RegistryObject<Item> SPELLDEV2 = ITEMS.register("spelldev2", () -> new SpellDev2(new Item.Properties().group(GeomancyAndTerraforming.GEOMANCYANDTERRAFORMING_TAB)));
     public static final RegistryObject<Item> SPELLDEV3 = ITEMS.register("spelldev3", () -> new SpellDev3(new Item.Properties().group(GeomancyAndTerraforming.GEOMANCYANDTERRAFORMING_TAB)));
     public static final RegistryObject<Item> SPELLDEV4 = ITEMS.register("spelldev4", () -> new SpellDev4(new Item.Properties().group(GeomancyAndTerraforming.GEOMANCYANDTERRAFORMING_TAB)));
+    public static final RegistryObject<Item> SPELLDEV5 = ITEMS.register("spelldev5", () -> new SpellDev5(new Item.Properties().group(GeomancyAndTerraforming.GEOMANCYANDTERRAFORMING_TAB)));
 
 
 
